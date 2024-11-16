@@ -68,7 +68,7 @@ class RailsIcons::Icon
   end
 
   def library_set_attributes
-    return custom_library || {} if custom_library?
+    return custom_library.dig(set) || {} if custom_library?
 
     RailsIcons.configuration.libraries.dig(@library, set) || {}
   end
@@ -79,6 +79,6 @@ class RailsIcons::Icon
       .libraries
       .dig("custom")
       &.with_indifferent_access
-      &.dig(@library, set) || {}
+      &.dig(@library) || {}
   end
 end
