@@ -1,7 +1,7 @@
 require "rails_icons/icon/attributes"
 
 class RailsIcons::Icon
-  def initialize(name:, library:, set:, args:)
+  def initialize(name:, library:, args:, set: nil)
     @name = name
     @library = library.to_s
     @set = set.to_s
@@ -21,12 +21,16 @@ class RailsIcons::Icon
   private
 
   def error_message
-    "Icon not found: `#{@library} / #{set} / #{@name}`"
+    return "Icon not found: `#{@library} / #{set} / #{@name}`" if set
+    "Icon not found: `#{@library} / #{@name}`"
   end
 
   def file_path
-    custom_library.dig("path") ||
-      Rails.root.join("app", "assets", "svg", "icons", @library, set, "#{@name}.svg")
+    return custom_library.dig("path") if custom_library?
+
+    return Rails.root.join("app", "assets", "svg", "icons", @library, set, "#{@name}.svg") if set
+
+    Rails.root.join("app", "assets", "svg", "icons", @library, "#{@name}.svg")
   end
 
   def custom_library?
@@ -48,9 +52,7 @@ class RailsIcons::Icon
   end
 
   def set
-    return @set if @set.present?
-
-    RailsIcons.configuration.default_set
+    @set.presence
   end
 
   def default_css
