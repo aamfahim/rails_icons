@@ -21,16 +21,29 @@ class RailsIcons::Icon
   private
 
   def error_message
-    return "Icon not found: `#{@library} / #{set} / #{@name}`" if set
-    "Icon not found: `#{@library} / #{@name}`"
+    attributes = [
+      @library,
+      set,
+      @name
+    ].compact_blank
+
+    "Icon not found: `#{attributes.join(" / ")}`"
   end
 
   def file_path
     return custom_library.dig("path") if custom_library?
 
-    return Rails.root.join("app", "assets", "svg", "icons", @library, set, "#{@name}.svg") if set
+    path_parts = [
+      "app",
+      "assets",
+      "svg",
+      "icons",
+      @library,
+      set,
+      "#{@name}.svg"
+    ].compact_blank
 
-    Rails.root.join("app", "assets", "svg", "icons", @library, "#{@name}.svg")
+    Rails.root.join(*path_parts)
   end
 
   def custom_library?
