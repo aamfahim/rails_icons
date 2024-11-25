@@ -1,10 +1,10 @@
 require "rails_icons/icon/attributes"
 
 class RailsIcons::Icon
-  def initialize(name:, library:, args:, set: nil)
+  def initialize(name:, library:, args:, variant: nil)
     @name = name
     @library = library.to_s
-    @set = set.to_s
+    @variant = variant.to_s
     @args = args
   end
 
@@ -23,7 +23,7 @@ class RailsIcons::Icon
   def error_message
     attributes = [
       @library,
-      set,
+      variant,
       @name
     ].compact_blank
 
@@ -39,7 +39,7 @@ class RailsIcons::Icon
       "svg",
       "icons",
       @library,
-      set,
+      variant,
       "#{@name}.svg"
     ].compact_blank
 
@@ -64,8 +64,8 @@ class RailsIcons::Icon
     }
   end
 
-  def set
-    @set.presence
+  def variant
+    @variant.presence
   end
 
   def default_css
@@ -83,7 +83,7 @@ class RailsIcons::Icon
   def library_set_attributes
     return custom_library || {} if custom_library?
 
-    RailsIcons.configuration.libraries.dig(@library, set) || {}
+    RailsIcons.configuration.libraries.dig(@library, variant) || {}
   end
 
   def custom_library
@@ -92,6 +92,6 @@ class RailsIcons::Icon
       .libraries
       .dig("custom")
       &.with_indifferent_access
-      &.dig(*set ? [@library, set] : [@library]) || {}
+      &.dig(*variant ? [@library, variant] : [@library]) || {}
   end
 end

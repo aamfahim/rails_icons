@@ -60,7 +60,7 @@ class IconTest < ActiveSupport::TestCase
 
   private
 
-  def icon(name, library: "heroicons", set: "outline", **args)
-    RailsIcons::Icon.new(name: name, library:, set:, args:).svg
+  def icon(name, library: "heroicons", variant: "outline", **args)
+    RailsIcons::Icon.new(name: name, library:, variant:, args:).svg
   end
 end
