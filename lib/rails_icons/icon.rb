@@ -65,7 +65,7 @@ class RailsIcons::Icon
   end
 
   def variant
-    @variant.presence
+    @variant.presence || (custom_library? ? nil : RailsIcons.configuration.default_variant)
   end
 
   def default_css
