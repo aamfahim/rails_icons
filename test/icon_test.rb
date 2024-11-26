@@ -42,7 +42,7 @@ class IconTest < ActiveSupport::TestCase
 
   test "without variant, using default configuration, it returns a SVG" do
     assert_nothing_raised do
-      icon_with_no_variant("check")
+      icon_with_no_variant("academic-cap")
     end
   end
 

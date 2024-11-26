@@ -65,7 +65,7 @@ class RailsIcons::Icon
   end
 
   def variant
-    @variant.presence || (custom_library? ? nil : RailsIcons.configuration.default_variant)
+    @variant.presence || ([:heroicons, :lucide, :tabler].include?(@library.to_sym) ? RailsIcons.configuration.default_variant : nil)
   end
 
   def default_css
