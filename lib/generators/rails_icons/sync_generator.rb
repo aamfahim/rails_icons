@@ -1,52 +1,65 @@
+# frozen_string_literal: true
+
 require "fileutils"
+require_relative "sync/engine"
 
 module RailsIcons
   class SyncGenerator < Rails::Generators::Base
-    ICON_VAULT_REPO_URL = "https://github.com/Rails-Designer/rails_icons_vault.git".freeze
+    class_option :libraries, type: :array, default: ["heroicons"], desc: "Choose libraries (#{RailsIcons::Libraries.all.keys.join("/")})"
+    class_option :destination, type: :string, default: "app/assets/svg/icons/", desc: "Custom destination folder for icons (default: `app/assets/svg/icons/`)"
 
-    argument :libraries, type: :array, default: [], banner: "heroicons lucide tabler"
-
-    class_option :destination, type: :string, default: nil,
-      desc: "Custom destination folder for icons (default: `app/assets/svg/icons/`)"
-
-    desc "Sync a specified icon set(s) from the Rails Icons Vault (https://github.com/Rails-Designer/rails_icons_vault)"
+    desc "Sync an icon library(s) from their respective git repos."
     source_root File.expand_path("templates", __dir__)
 
     def sync_icons
-      icons_dir = options[:destination] || Rails.root.join("app/assets/svg/icons")
-      tmp_dir = Rails.root.join("tmp/icons")
+      raise "[Rails Icons] Not a valid library" if libraries.empty?
 
-      FileUtils.rm_rf(tmp_dir) if Dir.exist?(tmp_dir)
-      FileUtils.mkdir_p(tmp_dir)
+      clean_temp_directory
 
-      if system("git clone '#{ICON_VAULT_REPO_URL}' '#{tmp_dir}'")
-        say "Repository cloned successfully.", :green
-      else
-        say "Failed to clone repository.", :red
+      libraries.each { |library| sync(library) }
 
-        exit 1
-      end
+      clean_temp_directory
+    end
 
-      libraries.each do |set|
-        set_path = File.join(tmp_dir, "icons", set)
+    private
 
-        if Dir.exist?(set_path)
-          destination_path = File.join(icons_dir, set)
+    def clean_temp_directory
+      FileUtils.rm_rf(temp_directory) if Dir.exist?(temp_directory)
+    end
 
-          FileUtils.mkdir_p(destination_path)
-          FileUtils.cp_r(Dir.glob("#{set_path}/*"), destination_path)
+    def libraries
+      Array(options[:libraries])
+        .flat_map { |library| library.split(",") }
+        .map(&:to_sym) & RailsIcons::Libraries.all.keys
+    end
 
-          say "Synced `#{set}` icons for set", :green
-        else
-          say "Icon set `#{set}` not found", :red
+    def sync(name)
+      library = RailsIcons::Libraries.all.fetch(name.to_sym)
+      library_path = File.join(temp_directory, library[:name])
 
-          exit 1
-        end
-      end
+      Sync::Engine.new(temp_directory, library).sync
 
-      FileUtils.rm_rf(tmp_dir)
+      raise_library_not_found(name) unless Dir.exist?(library_path)
+      copy_library(library[:name], library_path)
+    end
 
-      say "Icons synced successfully", :green
+    def temp_directory
+      Rails.root.join("tmp/icons")
+    end
+
+    def copy_library(library, source)
+      destination = File.join(options[:destination], library)
+
+      FileUtils.mkdir_p(destination)
+
+      FileUtils.cp_r(Dir.glob("#{source}/*"), destination)
+
+      say "[Rails Icons] Synced '#{library}' library successfully #{%w[😃 🎉 ✨].sample}", :green
+    end
+
+    def raise_library_not_found(library)
+      say "[Rails Icons] Could not find '#{library}' library 🤷", :red
+      exit 1
     end
   end
 end

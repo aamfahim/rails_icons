@@ -3,7 +3,7 @@ require "rails_icons/icon/attributes"
 class RailsIcons::Icon
   def initialize(name:, library:, args:, variant: nil)
     @name = name
-    @library = library.to_s
+    @library = library.to_s.inquiry
     @variant = variant.to_s
     @args = args
   end
@@ -11,11 +11,11 @@ class RailsIcons::Icon
   def svg
     raise RailsIcons::NotFound, error_message unless File.exist?(file_path)
 
-    svg_file = Nokogiri::HTML::DocumentFragment.parse(File.read(file_path)).at_css("svg")
-
-    attach_attributes to: svg_file
-
-    svg_file.to_html.html_safe
+    Nokogiri::HTML::DocumentFragment.parse(File.read(file_path))
+      .at_css("svg")
+      .tap { |svg| attach_attributes(to: svg) }
+      .to_html
+      .html_safe
   end
 
   private
@@ -31,6 +31,7 @@ class RailsIcons::Icon
   end
 
   def file_path
+    return RailsIcons::Engine.root.join("app", "assets", "svg", "rails_icons", "icons", "animated", "base", "#{@name}.svg") if @library.animated?
     return custom_library.dig("path") if custom_library?
 
     path_parts = [

@@ -1,112 +1,125 @@
 # Rails Icons
 
-Embed any library's icon in your Rails app. There are many icon gems for Rails already, but none are library-agnostic. This means you need to pull in other gems or add your logic to display that one specific icon.
+> [!NOTE]
+> This README is for the main branch. For the latest stable version, see the [release branch README](https://github.com/Rails-Designer/rails_icons/blob/18deb5326d621d5766595222af6ad77bb3361713/README.md)
 
-The first-party supported icons are stored in a seperate repo: [rails_icons_vault](https://github.com/Rails-Designer/rails_icons_vault). This allows you to pull in only the icon libraries you need, keeping the rails_icons gem lean and lightweight.
+Add any icon library to a Rails app. Rails Icons has first-party support for a [handful of libraries](#first-party-libraries). It is library agnostic so it can be used with any icon library using the same interface.
+
+```erb
+# Using the default icon library
+<%= icon "check", class: "text-gray-500" %>
+
+# Using any custom library
+<%= icon "apple", library: "simple_icons", class: "text-black" %>
+```
+
+The icons are pulled from their respective GitHub repositories, keeping Rails icons' core lightweight.
 
 
-## Sponsored By [Rails Designer](https://railsdesigner.com/)
+**Sponsored By [Rails Designer](https://railsdesigner.com/)**
 
 <a href="https://railsdesigner.com/" target="_blank">
-  <img src="https://raw.githubusercontent.com/Rails-Designer/rails_icons/main/docs/rails_designer_icon.jpg" alt="Rails Designer logo"  width="300" />
+  <img src="https://raw.githubusercontent.com/Rails-Designer/rails_icons/main/docs/rails_designer_icon.jpg" alt="Rails Designer logo"  width="240" />
 </a>
 
 
 ## Install
 
-Add this line to your Gemfile:
-
-```ruby
-gem "rails_icons"
+Add the rails_icons gem:
+```bash
+bundle add rails_icons
 ```
 
-And run:
-
+Install, choosing one of the supported libraries
 ```bash
-bundle
+rails generate rails_icons:install --libraries=LIBRARY_NAME
 ```
 
-Sync any of the supported icon libraries from the
-[rails_icons_vault](https://github.com/Rails-Designer/rails_icons_vault):
+**Example**:
+```bash
+rails generate rails_icons:install --libraries=heroicons
+```
+
+Or multiple at once:
+```bash
+rails generate rails_icons:install --libraries=heroicons,lucide
+```
+
+
+## Sync icons
+
+If a library gets updated, sync the icons to your app by running:
 
 ```bash
-rails generate rails_icons:sync heroicons
+rails generate rails_icons:sync --libraries=LIBRARY_NAME
+```
+
+**Example**:
+```bash
+rails generate rails_icons:sync --libraries=heroicons
+```
+
+Or multiple at once:
+```bash
+rails generate rails_icons:sync --libraries=heroicons,lucide
 ```
 
 
 ## Usage
 
 ```ruby
-# The default library is Heroicons, with "outline" as the default set
+# Uses the default library and variant defined in config/initializer/rails_icons.rb
 icon "check"
 
-# Use another set (options are: outline, solid, mini, micro)
-icon "check", set: "solid"
+# Use another variant
+icon "check", variant: "solid"
 
-# Add CSS to the icon
+# Set library explictly
+icon "check", library: "heroicons"
+
+# Add CSS
 icon "check", class: "text-green-500"
 
 # Add data attributes
 icon "check", data: { controller: "swap" }
 
-# Tweak the stroke-width
+# Set the stroke-width
 icon "check", stroke_width: 2
 ```
 
 
-## Initializer
+## First-party libraries
+
+- [Feather](https://github.com/feathericons/feather)
+- [Heroicons](https://github.com/tailwindlabs/heroicons)
+- [Lucide](https://github.com/lucide-icons/lucide)
+- [Tabler](https://github.com/tabler/tabler-icons)
+
+
+## Animated icons
+
+Rails Icons also includes a few animated icons. Great for loading states and so on. These are currently included:
+
+- `faded-spinner`
+- `trailing-spinner`
+- `fading-dots`
+- `bouncing-dots`
+
+Use like this: `icon "faded-spinner", library: "animated"`. The same attributes as other libraries are available.
+
+
+## Custom icon library
+
+Need to use an icon from another library?
+
+1. add the (SVG) icon to **app/assets/svg/icons/LIBRARY_NAME/DEFAULT_VARIANT**;
+2. run `rails generate rails_icons:initializer --library=custom`;
+3. update the initializer with the library name and, optionally, default variant.
+
+Every custom icon can now be used with the same interface as first-party icon libraries.
 
 ```ruby
-RailsIcons.configure do |config|
-  # Set the default set for the library
-  config.default_library = "heroicons"
-  config.default_set = "outline"
-
-  config.libraries.heroicons.solid.default.css = "size-6"
-  config.libraries.heroicons.solid.default.data = {}
-
-  config.libraries.heroicons.outline.default.css = "size-6"
-  config.libraries.heroicons.outline.default.stroke_width = "1.5"
-  config.libraries.heroicons.outline.default.data = {}
-
-  config.libraries.heroicons.mini.default.css = "size-5"
-  config.libraries.heroicons.mini.default.data = {}
-
-  config.libraries.heroicons.micro.default.css = "size-4"
-  config.libraries.heroicons.micro.default.data = {}
-end
-```
-
-Or run `rails generate rails_icons:initializer`.
-
-
-## Add a custom icon library
-
-```ruby
-RailsIcons.configure do |config|
-  # …
-  config.libraries.merge!(
-    {
-      custom: {
-        simple_icons: {
-          solid: {
-            path: "app/assets/svg/simple_icons/solid", # optional: the default lookup path is: `app/assets/svg/#{library_name}/#{set}`
-            default: {
-              css: "w-6 h-6"
-            }
-          }
-        }
-      }
-    }
-  )
-  # …
-end
-```
-
-You can now use any svg-icon in the `app/assets/svg/simple_icons/solid` folder as a first-party icon:
-
-```ruby
-icon "reddit", library: "simple_icons", set: "solid"
+icon "apple", library: "simple_icons", class: "text-black"
 ```
 
 
